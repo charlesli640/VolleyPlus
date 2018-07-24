@@ -21,14 +21,16 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
+import android.support.v7.widget.AppCompatImageView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.ImageView;
+
 
 import com.android.volley.Response.Listener;
 import com.android.volley.cache.SimpleImageLoader;
@@ -42,12 +44,11 @@ import com.android.volley.toolbox.ImageLoader.ImageListener;
  * Handles fetching an image from a URL as well as the life-cycle of the
  * associated request.
  */
-public class NetworkImageView extends ImageView {
+public class NetworkImageView extends AppCompatImageView {
     private final int[] attrsArray = {
             android.R.attr.src,
     };
-    private static final ColorDrawable transparentDrawable = new ColorDrawable(
-            android.R.color.transparent);
+    private static final ColorDrawable transparentDrawable = new ColorDrawable(Color.TRANSPARENT);;
 	private static final int HALF_FADE_IN_TIME = Utils.ANIMATION_FADE_IN_TIME / 2;
     /** The URL of the network image to load */
     protected String mUrl;

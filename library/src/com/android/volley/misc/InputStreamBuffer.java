@@ -28,7 +28,7 @@ import android.util.Log;
  * Wrapper for {@link InputStream} that allows you to read bytes from it like a byte[]. An
  * internal buffer is kept as small as possible to avoid large unnecessary allocations.
  *
- * <p/>
+ * <p>
  * Care must be taken so that the internal buffer is kept small. The best practice is to
  * precalculate the maximum buffer size that you will need. For example,
  * say you have a loop that reads bytes from index <code>0</code> to <code>10</code>,
@@ -36,13 +36,13 @@ import android.util.Log;
  * you know that the internal buffer can have a maximum size of <code>10</code>,
  * and you should set the <code>bufferSize</code> parameter to <code>10</code> in the constructor.
  *
- * <p/>
+ * <p>
  * Use {@link #advanceTo(int)} to declare that you will not need to access lesser indexes. This
  * helps to keep the internal buffer small. In the above example, after reading bytes from index
  * <code>0</code> to <code>10</code>, you should call <code>advanceTo(N)</code> so that internal
  * buffer becomes filled with bytes from index <code>N</code> to <code>N+10</code>.
  *
- * <p/>
+ * <p>
  * If you know that you are reading bytes from a <strong>strictly</strong> increasing or equal
  * index, then you should set the <code>autoAdvance</code> parameter to <code>true</code> in the
  * constructor. For complicated access patterns, or when you prefer to control the internal
@@ -51,7 +51,7 @@ import android.util.Log;
  * the buffer will be shifted forward such that the index requested becomes the first element in
  * the buffer.
  *
- * <p/>
+ * <p>
  * All public methods with parameter <code>index</code> are absolute indexed. The index is from
  * the beginning of the wrapped input stream.
  */
@@ -72,14 +72,14 @@ public class InputStreamBuffer {
     /**
      * Construct a new wrapper for an InputStream.
      *
-     * <p/>
+     * <p>
      * If <code>autoAdvance</code> is true, behavior is undefined if you call {@link #get(int)}
      * or {@link #has(int)} with an index N, then some arbitrary time later call {@link #get(int)}
      * or {@link #has(int)} with an index M < N. The wrapper may return the right value,
      * if the buffer happens to still contain index M, but more likely it will throw an
      * {@link IllegalStateException}.
      *
-     * <p/>
+     * <p>
      * If <code>autoAdvance</code> is false, you must be diligent and call {@link #advanceTo(int)}
      * at the appropriate times to ensure that the internal buffer is not unnecessarily resized
      * and reallocated.
@@ -114,15 +114,15 @@ public class InputStreamBuffer {
      * head of the buffer, or the index is greater or equal to the size of the wrapped input stream,
      * a runtime exception is thrown.
      *
-     * <p/>
+     * <p>
      * If the index is not in the internal buffer, but it can be requested from the input stream,
      * {@link #fill(int)} will be called first, and the byte at the index returned.
      *
-     * <p/>
+     * <p>
      * You should always call {@link #has(int)} with the same index, unless you are sure that no
      * exceptions will be thrown as described above.
      *
-     * <p/>
+     * <p>
      * Consider calling {@link #advanceTo(int)} if you know that you will never request a lesser
      * index in the future.
      * @param index The requested index.
@@ -145,13 +145,13 @@ public class InputStreamBuffer {
      * Attempt to return whether the requested index is within the size of the wrapped input
      * stream. One side effect is {@link #fill(int)} will be called.
      *
-     * <p/>
+     * <p>
      * If this method returns true, it is guaranteed that {@link #get(int)} with the same index
      * will not fail. That means that if the requested index is within the size of the wrapped
      * input stream, but the index is less than the head of the internal buffer,
      * a runtime exception is thrown.
      *
-     * <p/>
+     * <p>
      * See {@link #get(int)} for caveats. A lot of the same warnings about exceptions and
      * <code>advanceTo()</code> apply.
      * @param index The requested index.
@@ -182,7 +182,7 @@ public class InputStreamBuffer {
      * Attempts to advance the head of the buffer to the requested index. If the index is less
      * than the head of the buffer, the internal state will not be changed.
      *
-     * <p/>
+     * <p>
      * Advancing does not fill the internal buffer. The next {@link #get(int)} or
      * {@link #has(int)} call will fill the buffer.
      */
@@ -245,11 +245,11 @@ public class InputStreamBuffer {
      * requested index will always be in the buffer. If the index is less
      * than the head of the buffer, a runtime exception is thrown.
      *
-     * <p/>
+     * <p>
      * If the requested index is already in bounds of the buffer, then the buffer will just be
      * filled.
      *
-     * <p/>
+     * <p>
      * Otherwise, if <code>autoAdvance</code> was set to true in the constructor,
      * {@link #advanceTo(int)} will be called with the requested index,
      * and then the buffer filled. If <code>autoAdvance</code> was set to false,

@@ -275,7 +275,7 @@ public class DiskLruBasedCache implements Cache {
         /**
          * Sets the memory cache size based on a percentage of the max available VM memory.
          * Eg. setting percent to 0.2 would set the memory cache to one fifth of the available
-         * memory. Throws {@link IllegalArgumentException} if percent is < 0.01 or > .8.
+         * memory. Throws {@link IllegalArgumentException} if percent is &lt; 0.01 or &gt; .8.
          * memCacheSize is stored in kilobytes instead of bytes as this will eventually be passed
          * to construct a LruCache which takes an int in its constructor.
          *

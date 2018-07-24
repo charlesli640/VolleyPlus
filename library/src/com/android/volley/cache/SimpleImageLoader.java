@@ -22,6 +22,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -57,8 +58,7 @@ import java.util.ArrayList;
  * into loadImage to ensure the request is canceled as views are recycled.
  */
 public class SimpleImageLoader extends ImageLoader {
-    private static final ColorDrawable transparentDrawable = new ColorDrawable(
-            android.R.color.transparent);
+    private static final ColorDrawable transparentDrawable = new ColorDrawable(Color.TRANSPARENT);
     private static final int HALF_FADE_IN_TIME = Utils.ANIMATION_FADE_IN_TIME / 2;
     protected static final String CACHE_DIR = "images";
 

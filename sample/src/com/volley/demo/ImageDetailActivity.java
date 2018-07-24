@@ -94,27 +94,29 @@ public class ImageDetailActivity extends AppCompatActivity implements OnClickLis
         // immersive photo viewing experience
         if (Utils.hasHoneycomb()) {
             final ActionBar actionBar = getActionBar();
+            if (actionBar != null) {
 
-            // Hide title text and set home as up
-            actionBar.setDisplayShowTitleEnabled(false);
-            actionBar.setDisplayHomeAsUpEnabled(true);
+                // Hide title text and set home as up
+                actionBar.setDisplayShowTitleEnabled(false);
+                actionBar.setDisplayHomeAsUpEnabled(true);
 
-            // Hide and show the ActionBar as the visibility changes
-            mPager.setOnSystemUiVisibilityChangeListener(
-                    new View.OnSystemUiVisibilityChangeListener() {
-                        @Override
-                        public void onSystemUiVisibilityChange(int vis) {
-                            if ((vis & View.SYSTEM_UI_FLAG_LOW_PROFILE) != 0) {
-                                actionBar.hide();
-                            } else {
-                                actionBar.show();
+                // Hide and show the ActionBar as the visibility changes
+                mPager.setOnSystemUiVisibilityChangeListener(
+                        new View.OnSystemUiVisibilityChangeListener() {
+                            @Override
+                            public void onSystemUiVisibilityChange(int vis) {
+                                if ((vis & View.SYSTEM_UI_FLAG_LOW_PROFILE) != 0) {
+                                    actionBar.hide();
+                                } else {
+                                    actionBar.show();
+                                }
                             }
-                        }
-                    });
+                        });
 
-            // Start low profile mode and hide ActionBar
-            mPager.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
-            actionBar.hide();
+                // Start low profile mode and hide ActionBar
+                mPager.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+                actionBar.hide();
+            }
         }
 
         // Set the current item based on the extra passed in to this activity

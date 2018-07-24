@@ -35,9 +35,9 @@ public class VolleyLog {
     /**
      * Customize the log tag for your application, so that other apps
      * using Volley don't mix their logs with yours.
-     * <br />
+     * <br>
      * Enable the log property for your tag before starting your app:
-     * <br />
+     * <br>
      * {@code adb shell setprop log.tag.&lt;tag&gt;}
      */
     public static void setTag(String tag) {

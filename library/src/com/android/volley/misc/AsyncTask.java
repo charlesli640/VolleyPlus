@@ -291,12 +291,19 @@ public abstract class AsyncTask<Params, Progress, Result> {
         FINISHED,
     }
 
-    /** @hide Used to force static handler to be created. */
+    /**
+     * @hide
+     *
+     * Used to force static handler to be created.
+     * */
     public static void init() {
         sHandler.getLooper();
     }
 
-    /** @hide */
+    /**
+     * @hide
+     *
+     * */
     public static void setDefaultExecutor(Executor exec) {
         sDefaultExecutor = exec;
     }

@@ -13,6 +13,9 @@ apply plugin: 'com.android.application'
 dependencies {
     implementation fileTree(include: '*.jar', dir: 'libs')
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibraryVersion}"
+    //implementation "com.android.support:customtabs:${rootProject.ext.supportLibraryVersion}"
+    //implementation "com.android.support:animated-vector-drawable::${rootProject.ext.supportLibraryVersion}"
+
     implementation "com.google.code.gson:gson:2.8.2"
     implementation 'com.google.android.gms:play-services-ads:15.0.1'
     implementation project(':library')

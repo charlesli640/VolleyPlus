@@ -15,6 +15,9 @@ allprojects {
     }
 }
 
+configurations {
+    javadocDeps
+}
 
 apply plugin: 'com.android.library'
 //apply plugin: 'com.jfrog.bintray'
@@ -30,7 +33,12 @@ android {
         implementation "com.android.support:support-v4:${rootProject.ext.supportLibraryVersion}"
         implementation "com.google.code.gson:gson:2.8.2"
         implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibraryVersion}"
+
+        javadocDeps "com.android.support:support-v4:${rootProject.ext.supportLibraryVersion}"
+        javadocDeps "com.google.code.gson:gson:2.8.2"
+        javadocDeps "com.android.support:appcompat-v7:${rootProject.ext.supportLibraryVersion}"
     }
+
     compileSdkVersion rootProject.ext.compileSdkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
     useLibrary 'org.apache.http.legacy'
@@ -60,6 +68,8 @@ android {
     task androidJavadocs(type: Javadoc) {
         source = android.sourceSets.main.java.srcDirs
         classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+        classpath += configurations.javadocDeps
+        failOnError false
     }
     task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
         classifier = 'javadoc'

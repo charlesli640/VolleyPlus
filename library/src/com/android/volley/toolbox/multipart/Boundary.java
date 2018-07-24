@@ -9,7 +9,7 @@ import android.text.TextUtils;
 import com.android.volley.misc.MultipartUtils;
 
 /**
- * @author <a href="mailto:vit at cleverua.com">Vitaliy Khudenko</a>
+ * @author <a href="mailto://vit at cleverua.com">Vitaliy Khudenko</a>
  */
 /* package */ class Boundary {
 
