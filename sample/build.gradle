@@ -4,23 +4,24 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.0-alpha08'
+        classpath 'com.android.tools.build:gradle:3.1.1'
     }
 }
 
 apply plugin: 'com.android.application'
 
 dependencies {
-    compile fileTree(include: '*.jar', dir: 'libs')
-    compile 'com.android.support:appcompat-v7:27.1.1'
-    compile 'com.google.android.gms:play-services-ads:15.0.1'
-    compile project(':library')
+    implementation fileTree(include: '*.jar', dir: 'libs')
+    implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibraryVersion}"
+    implementation "com.google.code.gson:gson:2.8.2"
+    implementation 'com.google.android.gms:play-services-ads:15.0.1'
+    implementation project(':library')
 }
 
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion '27.0.3'
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
     useLibrary 'org.apache.http.legacy'
     sourceSets {
         main {
