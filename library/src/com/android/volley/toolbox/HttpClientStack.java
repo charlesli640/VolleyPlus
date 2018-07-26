@@ -16,6 +16,8 @@
 
 package com.android.volley.toolbox;
 
+import android.util.Log;
+
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
 import com.android.volley.Response.ProgressListener;
@@ -23,7 +25,8 @@ import com.android.volley.error.AuthFailureError;
 import com.android.volley.misc.MultiPartParam;
 import com.android.volley.request.MultiPartRequest;
 import com.android.volley.toolbox.multipart.FilePart;
-import com.android.volley.toolbox.multipart.MultipartEntity;
+//import com.android.volley.toolbox.multipart.MultipartEntity;
+import com.android.volley.toolbox.multipart.MultipartProgressEntity;
 import com.android.volley.toolbox.multipart.StringPart;
 
 import org.apache.http.HttpEntity;
@@ -57,6 +60,7 @@ import static com.android.volley.misc.MultipartUtils.HEADER_CONTENT_TYPE;
  * An HttpStack that performs request over an {@link HttpClient}.
  */
 public class HttpClientStack implements HttpStack {
+	private final static String TAG = "HttpClientStack";
 	protected final HttpClient mClient;
 
 	public HttpClientStack(HttpClient client) {
@@ -159,6 +163,7 @@ public class HttpClientStack implements HttpStack {
 
 	private static void setEntityIfNonEmptyBody(HttpEntityEnclosingRequestBase httpRequest, Request<?> request) throws IOException, AuthFailureError {
 
+		Log.d(TAG, "setEntityIfNonEmptyBody");
 		byte[] body = request.getBody();
 		if (body != null) {
 			ProgressListener progressListener = null;
@@ -167,7 +172,8 @@ public class HttpClientStack implements HttpStack {
 			}
 
 			if (null != progressListener) {
-				MultipartEntity multipartEntity = new MultipartEntity();
+				MultipartProgressEntity multipartEntity = new MultipartProgressEntity();
+				multipartEntity.setListener(progressListener);
 				final String charset = ((MultiPartRequest<?>) request).getProtocolCharset();
 				httpRequest.addHeader(HEADER_CONTENT_TYPE, String.format(CONTENT_TYPE_MULTIPART, charset, multipartEntity.getBoundary()));
 

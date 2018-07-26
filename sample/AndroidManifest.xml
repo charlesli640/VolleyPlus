@@ -59,6 +59,10 @@
             android:label="@string/act__main__btn_gson_request" >
         </activity>
         <activity
+            android:name="com.volley.demo.FileUploadActivity"
+            android:label="@string/act__main__btn_file_upload" >
+        </activity>
+        <activity
             android:name="com.volley.demo.ExampleImageLoading"
             android:label="@string/act__main__btn_image_loading" >
         </activity>

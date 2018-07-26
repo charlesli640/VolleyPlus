@@ -17,6 +17,7 @@
 package com.android.volley.toolbox;
 
 import android.os.SystemClock;
+import android.util.Log;
 
 import com.android.volley.Cache;
 import com.android.volley.Network;
@@ -55,6 +56,7 @@ import java.util.TreeMap;
  * A network performing Volley requests over an {@link HttpStack}.
  */
 public class BasicNetwork implements Network {
+    private static final String TAG = "BasicNetwork";
     protected static final boolean DEBUG = VolleyLog.DEBUG;
 
     private static int SLOW_REQUEST_THRESHOLD_MS = 3000;
@@ -255,6 +257,7 @@ public class BasicNetwork implements Network {
                 bytes.write(buffer, 0, count);
                 transferredBytes += count;
                 if (null != progressListener) {
+                    Log.d(TAG, "Before call onProgress. It is the response downloading progress.");
                     progressListener.onProgress(transferredBytes, totalSize);
                 }
             }

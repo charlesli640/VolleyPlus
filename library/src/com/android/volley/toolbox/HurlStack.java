@@ -18,6 +18,7 @@ package com.android.volley.toolbox;
 
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
@@ -37,6 +38,7 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicStatusLine;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,6 +60,7 @@ import static com.android.volley.misc.MultipartUtils.HEADER_USER_AGENT;
  * An {@link HttpStack} based on {@link HttpURLConnection}.
  */
 public class HurlStack implements HttpStack {
+    private final static String TAG = "HurlStack";
 
 	private UrlRewriter mUrlRewriter;
 	private final SSLSocketFactory mSslSocketFactory;
@@ -91,6 +94,7 @@ public class HurlStack implements HttpStack {
      * @param sslSocketFactory SSL factory to use for HTTPS connections
      */
     public HurlStack(UrlRewriter urlRewriter, SSLSocketFactory sslSocketFactory) {
+        Log.d(TAG, "====== HurlStack =========");
         mUrlRewriter = urlRewriter;
         mSslSocketFactory = sslSocketFactory;
     }
@@ -310,13 +314,26 @@ public class HurlStack implements HttpStack {
 
 			ProgressListener progressListener = null;
 			if (request instanceof ProgressListener) {
+				//Log.d(TAG, "if request instanceof ProgressListener == true");
 				progressListener = (ProgressListener) request;
 			}
 
 			if (progressListener != null) {
                 CountingOutputStream cos = new CountingOutputStream(connection.getOutputStream(), body.length,
                                                                            progressListener);
-                cos.write(body);
+                // If write the whole body, then the progressive listen will not be called multiple times in middle
+                //cos.write(body);
+
+                int maxBufferSize = 4 * 1024;
+                int bufferSize = Math.min(body.length, maxBufferSize);
+                byte[] buffer = new byte[bufferSize];
+
+                InputStream inputStream = new ByteArrayInputStream(body);
+                int len = 0;
+                while ((len = inputStream.read(buffer)) != -1) {
+                    cos.write(buffer, 0, len);
+                }
+
                 cos.close();
 			}
 			else{

@@ -1,5 +1,7 @@
 package com.android.volley.toolbox.multipart;
 
+import android.util.Log;
+
 import com.android.volley.Response.ProgressListener;
 
 import org.apache.http.protocol.HTTP;
@@ -25,6 +27,7 @@ import static com.android.volley.misc.MultipartUtils.SEMICOLON_SPACE;
  * @author <a href="mailto://vit at cleverua.com">Vitaliy Khudenko</a>
  */
 public final class FilePart extends BasePart {
+    private final static String TAG = "FilePart";
 
     private final File file;
     private ProgressListener mProgressListener;
@@ -90,6 +93,7 @@ public final class FilePart extends BasePart {
                 while ((l = in.read(tmp)) != -1) {
                     out.write(tmp, 0, l);
                     transferredBytes += l;
+                    Log.d(TAG, "before onProgress");
                     mProgressListener.onProgress(transferredBytes, totalSize);
                 }
             } finally {
