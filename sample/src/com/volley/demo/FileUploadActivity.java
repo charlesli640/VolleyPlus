@@ -149,7 +149,7 @@ public class FileUploadActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Log.d(TAG, "onProgress done: " + trans + " / " + total);
+                        //Log.d(TAG, "onProgress done: " + trans + " / " + total);
                         if (progressDialog != null) {
                             progressDialog.setMax((int) total);
                             progressDialog.setProgress((int) trans);
