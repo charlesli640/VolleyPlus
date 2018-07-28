@@ -24,7 +24,7 @@ import static com.android.volley.misc.MultipartUtils.SEMICOLON_SPACE;
 
 
 /**
- * @author <a href="mailto://vit at cleverua.com">Vitaliy Khudenko</a>
+ * @author <a href="mailto:vit@cleverua.com">Vitaliy Khudenko</a>
  */
 public final class FilePart extends BasePart {
     private final static String TAG = "FilePart";

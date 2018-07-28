@@ -40,7 +40,7 @@ public class Volley {
     public static final int IMAGE_SIZE = 50;
     public static final String IMAGE_CACHE_DIR = "thumbs";
 
-    private static Volley mVolleyHelper;
+    //private static Volley mVolleyHelper;
 
     private final Context mContext;
     protected RequestTickle mRequestTickle;
@@ -56,12 +56,13 @@ public class Volley {
         mContext = context;
     }
 
+    /*
     public static Volley with(Context context) {
         if(null == mVolleyHelper) {
             mVolleyHelper = new Volley(context);
         }
         return mVolleyHelper;
-    }
+    }*/
 
     public Volley load(String string) {
         mUrl = string;

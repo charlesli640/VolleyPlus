@@ -9,7 +9,7 @@ import java.util.List;
 import org.apache.http.entity.AbstractHttpEntity;
 
 /**
- * @author <a href="mailto://vit at cleverua.com">Vitaliy Khudenko</a>
+ * @author <a href="mailto:vit@cleverua.com">Vitaliy Khudenko</a>
  */
 public class MultipartEntity extends AbstractHttpEntity implements Cloneable {
     

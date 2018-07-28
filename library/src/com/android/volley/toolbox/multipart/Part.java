@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * @author <a href="mailto://vit at cleverua.com">Vitaliy Khudenko</a>
+ * @author <a href="mailto:vit@cleverua.com">Vitaliy Khudenko</a>
  */
 public interface Part {
     public long getContentLength(Boundary boundary);
