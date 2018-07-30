@@ -15,7 +15,7 @@
         android:id="@+id/url"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="http://192.168.1.100:5000"
+        android:text="http://192.168.1.9:5000"
         android:hint="@string/act__urlhint"/>
 
     <Button

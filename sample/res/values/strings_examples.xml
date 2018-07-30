@@ -38,7 +38,9 @@
     <string name="act__main__btn_okhttp_file_upload">Okhttp File Upload</string>
 
     <string name="file_upload_error_text">File Upload Failed!</string>
-    <string name="file_upload_progress_title">File Uploading ... %1$d %%</string>
+    <string name="file_upload_success_text">File Upload Succeeded!</string>
+    <string name="file_upload_progress_title">File Uploading ...</string>
+    <string name="file_upload_progress_percentage">File Uploading ... %1$d %%</string>
 
     act__file_close
 

@@ -10,7 +10,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileInfo {
+
     private static final String TAG = FileInfo.class.getSimpleName();
+    public static final int INVALID_SIZE = -1;
+    public static final int INVALID_TYPE = -2;
+    public static final int FILE_UPLOAD_UNKNOWN = -3;
+    public static final int FILE_UPLOAD_SUCCESS = 0;
+    public static final int FILE_UPLOAD_FAILURE = 1;
+    public static final int FILE_UPLOAD_CONFIRM_SUCCESS = 2;
+    public static final int FILE_UPLOAD_CONFIRM_FAILEURE = 3;
+
+
+
+
     private static List<String> validExtensions;
 
     static {
