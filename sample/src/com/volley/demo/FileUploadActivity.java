@@ -1,10 +1,6 @@
 package com.volley.demo;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -16,7 +12,6 @@ import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -33,7 +28,6 @@ import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.error.AuthFailureError;
 import com.android.volley.error.VolleyError;
 
 import com.android.volley.misc.MultiPartData;
@@ -42,18 +36,6 @@ import com.volley.demo.util.MyVolley;
 import com.volley.demo.util.Utils;
 import com.volley.demo.misc.FileInfo;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-//import okhttp3.Request;
-import okhttp3.RequestBody;
-import okio.Buffer;
-import okio.BufferedSink;
-import okio.ForwardingSink;
-import okio.Okio;
-import okio.Sink;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -122,8 +104,6 @@ public class FileUploadActivity extends AppCompatActivity {
             Uri uri = null;
             if (data != null) {
                 uri = data.getData();
-                //final FileInfo fileInfo = new FileInfo(this, uri);
-                //uploadFile_Okhttp(fileInfo);
                 uploadFileTask(this, uri);
             }
         }
@@ -135,8 +115,7 @@ public class FileUploadActivity extends AppCompatActivity {
             @Override
             protected String doInBackground(String... params) {
                 final FileInfo fileInfo = new FileInfo(ctx, uri);
-                uploadFile_Okhttp(fileInfo);
-                //uploadFile_Volleyplus(fileInfo);
+                uploadFile_Volleyplus(fileInfo);
                 return null;
             }
 
@@ -155,132 +134,6 @@ public class FileUploadActivity extends AppCompatActivity {
 
         LongOperation uploadfile = new LongOperation();
         uploadfile.execute();
-    }
-
-    private void uploadFile_Okhttp(final FileInfo fileInfo) {
-        final ProgressListener progressListener = new ProgressListener() {
-            boolean firstUpdate = true;
-
-            @Override
-            public void update(long bytesRead, long contentLength, boolean done) {
-                if (done) {
-                    Log.d(TAG, "completed");
-                } else {
-                    if (firstUpdate) {
-                        firstUpdate = false;
-                        if (contentLength == -1) {
-                            Log.d(TAG, "content-length: unknown");
-                        } else {
-                            Log.d(TAG, format("content-length: %d\n", contentLength));
-                            final long trans = bytesRead;
-                            final long total = contentLength;
-                            setProgress(trans, total);
-                        }
-                    }
-                    //System.out.println(bytesRead);
-
-                    if (contentLength != -1) {
-                        Log.d(TAG, format("%d%% done\n", (100 * bytesRead) / contentLength));
-                        final long trans = bytesRead;
-                        final long total = contentLength;
-                        setProgress(trans, total);
-                    }
-                }
-            }
-        };
-
-        Callback callback = new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                hideSpinner();
-                String err = getString(R.string.file_upload_error_text);
-                //lblLog.setText(getString(R.string.file_upload_error_text));
-                //sendSystemMessageToAgent(err);
-                Log.i(TAG, "OKHttp call:" + call.toString() + " Callback @@@" + e.toString());
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onResponse(Call call, okhttp3.Response response) throws IOException {
-                hideSpinner();
-                String data = response.body().string();
-                Log.d(TAG, "OKHttp call response:" + data);
-                try {
-                    JSONObject jo = new JSONObject(data);
-                    String filename = jo.getString("fileName");
-                    //sendCustomerMessage(generateFileUrl(filename));
-                } catch (JSONException e) {
-                    Log.e(TAG, "onResponse json error:" + e.getMessage());
-                }
-            }
-        };
-
-        String url = "http://192.168.1.100:5000/";
-        //String url = "http://10.0.2.2:5000/";
-        //String url = "https://ft-west.touchcommerce.com/filetransfer/rest/cont/uploadFile";
-
-        final ContentResolver contentResolver = getContentResolver();
-        //final String contentType = contentResolver.getType(fileInfo.uri);
-        //Log.d(TAG, "File path uri.getPath()=" + uri.getPath());
-        //Log.d(TAG, "getUriRealPath = " + getUriRealPath(context, finfo.uri));
-        //final AssetFileDescriptor fd = contentResolver.openAssetFileDescriptor(finfo.uri, "r");
-        //if (fd == null) {
-        //    throw new FileNotFoundException("could not open file descriptor");
-        //}
-        RequestBody fileReq = new RequestBody() {
-            @Override
-            public long contentLength() {
-                return fileInfo.size;
-            }
-
-            @Override
-            public MediaType contentType() {
-                return MediaType.parse(fileInfo.contentType);
-            }
-
-            @Override
-            public void writeTo(BufferedSink sink) throws IOException {
-
-                Log.d("RequestBodyInner", "writeTo");
-                InputStream is = null;
-                try {
-                    is = contentResolver.openInputStream(fileInfo.uri); //fd.createInputStream();
-                    Log.d("RequestBodyInner", "sink.writeAll");
-                    sink.writeAll(Okio.buffer(Okio.source(is)));
-                    //is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    if (is != null) {
-                        try {
-                            is.close();
-                        } catch (Exception e) {
-                        }
-                    }
-                }
-            }
-        };
-
-        RequestBody requestBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                //.addFormDataPart("siteId", NuanMessaging.getInstance().getSiteID())
-                .addFormDataPart("file", fileInfo.name,
-                        new CountingRequestBody(fileReq, progressListener))
-                .build();
-
-        okhttp3.Request request = new okhttp3.Request.Builder()
-                .url(url)
-                .post(requestBody)
-                .build();
-
-        OkHttpClient client = new OkHttpClient.Builder()
-                .readTimeout(30, TimeUnit.SECONDS)
-                .build();
-        client.newCall(request).enqueue(callback);
-        //client.newCall(request).execute();//(callback);
-        Log.d(TAG, "request of file upload enqueued");
-        showSpinner();
-
     }
 
     private void uploadFile_Volleyplus(final FileInfo fileInfo) {
@@ -412,69 +265,4 @@ public class FileUploadActivity extends AppCompatActivity {
         });
     }
 
-
-    interface ProgressListener {
-        void update(long bytesRead, long contentLength, boolean done);
-    }
-
-
-    private static class CountingRequestBody extends RequestBody {
-
-        protected RequestBody delegate;
-        private final ProgressListener listener;
-
-        protected CountingSink countingSink;
-
-        public CountingRequestBody(RequestBody delegate, ProgressListener listener) {
-            this.delegate = delegate;
-            this.listener = listener;
-        }
-
-        @Override
-        public MediaType contentType() {
-            return delegate.contentType();
-        }
-
-        @Override
-        public long contentLength() {
-            try {
-                return delegate.contentLength();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return -1;
-        }
-
-        @Override
-        public void writeTo(BufferedSink sink) throws IOException {
-
-            Log.d("CountingRequestBody", "writeTo enter");
-            countingSink = new CountingSink(sink);
-            BufferedSink bufferedSink = Okio.buffer(countingSink);
-
-            Log.d("CountingRequestBody", "before delegate writeTo");
-            delegate.writeTo(bufferedSink);
-            Log.d("CountingRequestBody", "after delegate writeTo");
-
-            bufferedSink.flush();
-        }
-
-        protected final class CountingSink extends ForwardingSink {
-
-            private long bytesWritten = 0;
-
-            public CountingSink(Sink delegate) {
-                super(delegate);
-            }
-
-            @Override
-            public void write(Buffer source, long byteCount) throws IOException {
-                Log.d("CountingSink", "write");
-                super.write(source, byteCount);
-
-                bytesWritten += byteCount;
-                listener.update(bytesWritten, contentLength(), bytesWritten == contentLength());
-            }
-        }
-    }
 }

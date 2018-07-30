@@ -34,8 +34,11 @@
     <string name="act__urlhint">Input URL</string>
     <string name="act__file_upload">Choose File</string>
     <string name="act__file_close">Close</string>
-    <string name="act__main__btn_file_upload">Mutlipart Post (File Upload)</string>
+    <string name="act__main__btn_file_upload">Multipart Post (File Upload)</string>
+    <string name="act__main__btn_okhttp_file_upload">Okhttp File Upload</string>
+
     <string name="file_upload_error_text">File Upload Failed!</string>
+    <string name="file_upload_progress_title">File Uploading ... %1$d %%</string>
 
     act__file_close
 

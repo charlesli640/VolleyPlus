@@ -18,6 +18,7 @@ dependencies {
 
     implementation "com.squareup.okhttp3:okhttp:3.6.0"
     implementation "com.google.code.gson:gson:2.8.2"
+    //implementation "com.danilomendes.progressbar:progressbar:1.0.2"
     implementation 'com.google.android.gms:play-services-ads:15.0.1'
     implementation project(':library')
 }
@@ -48,6 +49,6 @@ android {
     // Adding new build types or product flavors should be accompanied
     // by a similar customization.
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion rootProject.ext.minSdkVersion
     }
 }

@@ -84,6 +84,6 @@ android {
         archives androidJavadocsJar
     }
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion rootProject.ext.minSdkVersion
     }
 }
