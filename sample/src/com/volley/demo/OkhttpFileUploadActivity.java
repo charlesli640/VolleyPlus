@@ -1,12 +1,7 @@
 package com.volley.demo;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.TimeUnit;
-
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -26,22 +21,14 @@ import android.widget.Toast;
 import com.volley.demo.util.Utils;
 import com.volley.demo.misc.FileInfo;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.RequestBody;
-import okio.Buffer;
-import okio.BufferedSink;
-import okio.ForwardingSink;
-import okio.Okio;
-import okio.Sink;
-
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 
 public class OkhttpFileUploadActivity extends AppCompatActivity {
@@ -49,6 +36,7 @@ public class OkhttpFileUploadActivity extends AppCompatActivity {
     public static final String TAG = FileUploadActivity.class.getSimpleName();
 
     private static final int READ_REQUEST_CODE = 42;
+    private static final int MAX_RETRY_TIMES = 2;
 
     private TextView lblLog;
     private EditText etUrl;
@@ -57,7 +45,7 @@ public class OkhttpFileUploadActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private TextView progressBarMessage;
     private int retried = 0;
-    private FileInfo fileInfo;
+    private boolean sync_request = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -115,20 +103,30 @@ public class OkhttpFileUploadActivity extends AppCompatActivity {
                 uploadFileTask(this, uri);
             } else {
                 lblLog.setVisibility(View.VISIBLE);
-                lblLog.setText("No file selected");
+                lblLog.setText("No file selected");  // XXX string
             }
         } else {
             lblLog.setVisibility(View.VISIBLE);
-            lblLog.setText("No file selected");
+            lblLog.setText("No file selected");  // XXX string
         }
     }
 
     private void uploadFileTask(final Context ctx, final Uri uri) {
+        final FileInfo.ProgressListener progressListener = new FileInfo.ProgressListener() {
+
+            @Override
+            public void updateProgress(int progress) {
+                if (0 <= progress && progress <= 100)
+                    setProgress(progress, 100);
+                else
+                    setProgress(-1, -1);
+            }
+        };
 
         class UploadProgressTask extends AsyncTask<String, Void, Integer> {
             @Override
             protected Integer doInBackground(String... params) {
-                fileInfo = new FileInfo(ctx, uri);
+                FileInfo fileInfo = new FileInfo(ctx, uri);
                 // Check the file size
                 if (!fileInfo.isValidSize())
                     return FileInfo.INVALID_SIZE;
@@ -136,7 +134,53 @@ public class OkhttpFileUploadActivity extends AppCompatActivity {
                     return FileInfo.INVALID_TYPE;
 
                 showProgress();
-                return uploadFile_Okhttp(ctx, fileInfo);  // If using async callback, it always fails
+                String url = etUrl.getText().toString();
+                //String url = "http://192.168.1.9:5000/";
+                //String url = "http://10.0.2.2:5000/";
+                //String url = "https://ft-west.touchcommerce.com/filetransfer/rest/cont/uploadFile";
+                // Sync request
+
+                if (sync_request)
+                    return fileInfo.uploadFile_Okhttp(ctx, url, progressListener);
+                    // If using async callback
+                else {
+                    Callback callback = new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+                            //String err = getString(R.string.file_upload_error_text);
+                            //lblLog.setText(getString(R.string.file_upload_error_text));
+                            //sendSystemMessageToAgent(err);
+                            //hideProgress(err);
+                            Log.i(TAG, "OKHttp call:" + call.toString() + " Callback @@@" + e.toString());
+                            if (retried < MAX_RETRY_TIMES) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        showRetryDialog(ctx, uri);
+                                    }
+                                });
+
+                            } else { // have tried 3 times, tell user try later
+                                hideProgress("Already retried 3 times! Maybe network issue. Please try later!"); // XXX over 3 retries string
+                            }
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            String data = response.body().string();
+                            try {
+                                JSONObject jo = new JSONObject(data);
+                                String filename = jo.getString("fileName");
+                                //sendCustomerMessage(generateFileUrl(filename));
+                            } catch (JSONException e) {
+                                Log.e(TAG, "onResponse json error:" + e.getMessage());
+                            }
+                            hideProgress(getString(R.string.file_upload_success_text));
+                        }
+                    };
+                    return fileInfo.uploadFile_Okhttp(ctx, url, progressListener, callback);
+                }
+
             }
 
             @Override
@@ -149,32 +193,12 @@ public class OkhttpFileUploadActivity extends AppCompatActivity {
                     hideProgress(getString(R.string.file_upload_success_text)); //get success string
                 } else if (result == FileInfo.FILE_UPLOAD_FAILURE) {
                     if (retried <= 2) {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
-                        builder.setMessage("Are you sure you want to retry?")  //XXX retry string
-                                .setCancelable(false)
-                                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        retried++;
-                                        Log.d(TAG, "retry #" + retried);
-                                        uploadFileTask(ctx, uri);
-                                    }
-                                })
-                                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        dialog.cancel();
-                                        Log.d(TAG, "User don't want to retry");
-                                        String err = getString(R.string.file_upload_error_text);
-                                        hideProgress(err);
-                                        //sendCustomerMessage(err, err);
-                                        retried = 0;
-                                        Toast.makeText(ctx, err, Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                        AlertDialog alert = builder.create();
-                        alert.show();
+                        showRetryDialog(ctx, uri);
                     } else { // retried 3 times, tell user try later
                         hideProgress("Already retried 3 times! Maybe network issue. Please try later!"); // XXX over 3 retries string
                     }
+                } else if (result == FileInfo.FILE_UPLOAD_ONGOING) {
+                    //do nothing
                 } else {
                     hideProgress(getString(R.string.file_upload_error_text));
                 }
@@ -183,133 +207,6 @@ public class OkhttpFileUploadActivity extends AppCompatActivity {
 
         UploadProgressTask uploadfile = new UploadProgressTask();
         uploadfile.execute();
-    }
-
-    private int uploadFile_Okhttp(final Context ctx, final FileInfo fileInfo) {
-        int result = FileInfo.FILE_UPLOAD_UNKNOWN;
-        final ProgressListener progressListener = new ProgressListener() {
-
-            @Override
-            public void updateProgress(int progress) {
-                if (0 <= progress && progress <= 100)
-                    setProgress(progress, 100);
-                else
-                    setProgress(-1, -1);
-            }
-        };
-
-        String url = etUrl.getText().toString();
-                //"http://192.168.1.9:5000/";
-        //String url = "http://10.0.2.2:5000/";
-        //String url = "https://ft-west.touchcommerce.com/filetransfer/rest/cont/uploadFile";
-
-
-        final ContentResolver contentResolver = getContentResolver();
-        RequestBody fileReq = new RequestBody() {
-            @Override
-            public long contentLength() {
-                return fileInfo.size;
-            }
-
-            @Override
-            public MediaType contentType() {
-                return MediaType.parse(fileInfo.contentType);
-            }
-
-            @Override
-            public void writeTo(BufferedSink sink) throws IOException {
-                //Log.d("RequestBodyInner", "writeTo");
-                InputStream is = null;
-                try {
-                    is = contentResolver.openInputStream(fileInfo.uri);
-                    //Log.d("RequestBodyInner", "sink.writeAll");
-                    sink.writeAll(Okio.buffer(Okio.source(is)));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    if (is != null) {
-                        try {
-                            is.close();
-                        } catch (Exception e) {
-                        }
-                    }
-                }
-            }
-        };
-
-        RequestBody requestBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                //.addFormDataPart("siteId", NuanMessaging.getInstance().getSiteID())
-                .addFormDataPart("file", fileInfo.name,
-                        new CountingRequestBody(fileReq, progressListener))
-                .build();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .post(requestBody)
-                .build();
-
-/*
-        Callback callback = new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                String err = getString(R.string.file_upload_error_text);
-                //lblLog.setText(getString(R.string.file_upload_error_text));
-                //sendSystemMessageToAgent(err);
-                hideProgress(err);
-                Log.i(TAG, "OKHttp call:" + call.toString() + " Callback @@@" + e.toString());
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String data = response.body().string();
-                try {
-                    JSONObject jo = new JSONObject(data);
-                    String filename = jo.getString("fileName");
-                    //sendCustomerMessage(generateFileUrl(filename));
-                } catch (JSONException e) {
-                    Log.e(TAG, "onResponse json error:" + e.getMessage());
-                }
-                hideProgress("");
-            }
-        };
-*/
-        OkHttpClient client = new OkHttpClient.Builder()
-                .readTimeout(30, TimeUnit.SECONDS)
-                .build();
-        //client.newCall(request).enqueue(callback);
-
-        try {
-            Response response = client.newCall(request).execute();
-            if (response.isSuccessful()) {
-                String data = response.body().string();
-                Log.d(TAG, "OKHttp call response:" + data);
-
-                try {
-                    JSONObject jo = new JSONObject(data);
-                    String filename = jo.getString("fileName");
-                } catch (JSONException e) {
-                    Log.e(TAG, "onResponse json error:" + e.getMessage());
-                }
-                result = FileInfo.FILE_UPLOAD_SUCCESS;
-            } else {
-                // retry
-                //String err = getString(R.string.file_upload_error_text);
-                Log.i(TAG, "OKHttp call Failed");
-                result = FileInfo.FILE_UPLOAD_FAILURE;
-            }
-        } catch (IOException e) {
-            result = FileInfo.FILE_UPLOAD_FAILURE;
-            Log.i(TAG, "OKHttp call Failed");
-            e.printStackTrace();
-        } catch (Exception e) {
-            result = FileInfo.FILE_UPLOAD_FAILURE;
-            Log.i(TAG, "OKHttp call Failed");
-            e.printStackTrace();
-        }
-        Log.d(TAG, "return: " + result);
-
-        return result;
     }
 
     private void showProgress() {
@@ -357,61 +254,30 @@ public class OkhttpFileUploadActivity extends AppCompatActivity {
         });
     }
 
+    private void showRetryDialog(final Context ctx, final Uri uri) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+        builder.setMessage("Are you sure you want to retry?")  //XXX retry string
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        retried++;
+                        Log.d(TAG, "retry #" + retried);
+                        uploadFileTask(ctx, uri);
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
 
-    interface ProgressListener {
-        void updateProgress(int progress);
-    }
-
-    private static class CountingRequestBody extends RequestBody {
-
-        protected RequestBody delegate;
-        private final ProgressListener listener;
-
-        protected CountingSink countingSink;
-
-        public CountingRequestBody(RequestBody delegate, ProgressListener listener) {
-            this.delegate = delegate;
-            this.listener = listener;
-        }
-
-        @Override
-        public MediaType contentType() {
-            return delegate.contentType();
-        }
-
-        @Override
-        public long contentLength() {
-            try {
-                return delegate.contentLength();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return -1;
-        }
-
-        @Override
-        public void writeTo(BufferedSink sink) throws IOException {
-            countingSink = new CountingSink(sink);
-            BufferedSink bufferedSink = Okio.buffer(countingSink);
-            delegate.writeTo(bufferedSink);
-
-            bufferedSink.flush();
-        }
-
-        protected final class CountingSink extends ForwardingSink {
-            private long bytesWritten = 0;
-
-            public CountingSink(Sink delegate) {
-                super(delegate);
-            }
-
-            @Override
-            public void write(Buffer source, long byteCount) throws IOException {
-                super.write(source, byteCount);
-                bytesWritten += byteCount;
-                int prg = (int) (bytesWritten * 100 / contentLength());
-                listener.updateProgress(prg);
-            }
-        }
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                        Log.d(TAG, "User don't want to retry");
+                        String err = getString(R.string.file_upload_error_text);
+                        hideProgress(err);
+                        //sendCustomerMessage(err, err);
+                        retried = 0;
+                        Toast.makeText(ctx, err, Toast.LENGTH_LONG).show();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 }
