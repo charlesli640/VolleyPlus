@@ -31,9 +31,11 @@
     <string name="act__main__btn_network_list_view">Dynamic Image Caching</string>
 
     <string name="act__disclaimer">By uploading this file, you acknowledge and fully understand that the agent will be able to view the content of the file. Avoid uploading files that contain sensitive information, such as birth date, credit card numbers, and social security numbers.</string>
+    <string name="act__urlhint">Input URL</string>
     <string name="act__file_upload">Choose File</string>
     <string name="act__file_close">Close</string>
     <string name="act__main__btn_file_upload">Mutlipart Post (File Upload)</string>
+    <string name="file_upload_error_text">File Upload Failed!</string>
 
     act__file_close
 
